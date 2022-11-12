@@ -1,0 +1,16 @@
+az-500-test3.pdf filter=lfs diff=lfs merge=lfs -text
+health_clinic_biz.txt filter=lfs diff=lfs merge=lfs -text
+pipeline_anatomy.txt filter=lfs diff=lfs merge=lfs -text
+Azure filter=lfs diff=lfs merge=lfs -text
+Azure_DevOps_Lab.txt filter=lfs diff=lfs merge=lfs -text
+Brown[[:space:]]Bag[[:space:]]Session[[:space:]]-[[:space:]]Outline.docx filter=lfs diff=lfs merge=lfs -text
+README.md filter=lfs diff=lfs merge=lfs -text
+az-500-test1.pdf filter=lfs diff=lfs merge=lfs -text
+AZ-104[[:space:]]Questions[[:space:]]-[[:space:]]Shortcut.lnk filter=lfs diff=lfs merge=lfs -text
+AZ-500-Youtube.docx filter=lfs diff=lfs merge=lfs -text
+az-500-test4.pdf filter=lfs diff=lfs merge=lfs -text
+lab_migration.txt filter=lfs diff=lfs merge=lfs -text
+AZ-104[[:space:]]Questions filter=lfs diff=lfs merge=lfs -text
+az-500-test2.pdf filter=lfs diff=lfs merge=lfs -text
+test.txt filter=lfs diff=lfs merge=lfs -text
+AZ-104[[:space:]]Questions[[:space:]]screencaps filter=lfs diff=lfs merge=lfs -text
