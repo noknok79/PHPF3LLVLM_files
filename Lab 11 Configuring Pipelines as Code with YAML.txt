@@ -1,0 +1,120 @@
+
+
+Lab 11 Configuring Pipelines as Code with YAML
+
+https://microsoftlearning.github.io/AZ400-DesigningandImplementingMicrosoftDevOpsSolutions/Instructions/Labs/AZ400_M05_L11_Configuring_Pipelines_as_Code_with_YAML.html
+
+LOCATION='eastus'
+RESOURCEGROUPNAME='az400m11l01-RG'
+az group create --name $RESOURCEGROUPNAME --location $LOCATION
+
+SERVICEPLANNAME='az400l11a-sp1'
+az appservice plan create --resource-group $RESOURCEGROUPNAME --name $SERVICEPLANNAME --sku B3
+
+WEBAPPNAME=partsunlimited$RANDOM$RANDOMaz webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME
+az webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME
+
+
+USERNAME="Student"
+SQLSERVERPASSWORD="Pa55w.rd1234"
+SERVERNAME="partsunlimitedserver$RANDOM"
+az sql server create --name $SERVERNAME --resource-group $RESOURCEGROUPNAME \
+ --location $LOCATION --admin-user $USERNAME --admin-password $SQLSERVERPASSWORD
+
+
+STARTIP="0.0.0.0"
+ENDIP="0.0.0.0"
+az sql server firewall-rule create --server $SERVERNAME --resource-group $RESOURCEGROUPNAME \
+ --name AllowAzureResources --start-ip-address $STARTIP --end-ip-address $ENDIP
+
+az sql db create --server $SERVERNAME --resource-group $RESOURCEGROUPNAME --name PartsUnlimited \
+ --service-objective S0
+
+
+CONNSTRING=$(az sql db show-connection-string --name PartsUnlimited --server $SERVERNAME \
+ --client ado.net --output tsv)
+
+CONNSTRING=${CONNSTRING//<username>/$USERNAME}
+CONNSTRING=${CONNSTRING//<password>/$SQLSERVERPASSWORD}
+
+az webapp config connection-string set --name $WEBAPPNAME --resource-group $RESOURCEGROUPNAME \
+ -t SQLAzure --settings "DefaultConnectionString=$CONNSTRING" 
+
+
+=========================================================
+
+working azure-pipeline.yml
+
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- master
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+
+    pool:
+      vmImage: 'windows-2019'
+
+    variables:
+      solution: '**/*.sln'
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+
+    steps:
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'      
+    - task: NuGetToolInstaller@1
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          downloadPath: '$(System.ArtifactsDirectory)'
+          artifactName: 'drop'
+      - task: AzureRmWebAppDeployment@4
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: 'noknok79 - 11-5 - Azure Pass - Sponsorship(8fd1bfa1-8954-4c24-aa8d-7f60401ff0d4)'
+          appType: 'webApp'
+          WebAppName: 'partsunlimited939123475'
+          packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
+
+
+
+
+
+
+
+
